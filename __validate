@@ -1,0 +1,30 @@
+# vim: set ft=sh :
+
+__validate::integer()
+{
+  val=${1}
+  key=${2}
+  regex='^[0-9]+$'
+  if ! [[ ${val} =~ ${regex} ]]; then
+    echo "error: ${key} option requires integer, but input '${val}'." >&2; exit 1
+  fi
+}
+
+__validate::range()
+{
+  from=${1}
+  to=${2}
+  max=${3}
+
+  if [[ ${from} -lt 1 ]]; then
+    echo "error: f option requires >=1, but input '${from}'." >&2; exit 1
+  fi
+
+  if [[ ${from} -gt ${to} ]]; then
+    echo "error: invalid range. ${from} to ${to}" >&2; exit 1
+  fi
+
+  if [[ ${to} -gt ${max} ]]; then
+    echo "error: t option requires <=${max}" >&2; exit 1
+  fi
+}

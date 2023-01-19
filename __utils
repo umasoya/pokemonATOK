@@ -1,0 +1,24 @@
+# vim: set ft=sh :
+
+IFS_BACKUP=${IFS}
+
+__utils::ifs_backup()
+{
+  IFS_BACKUP=${IFS}
+
+  return 0
+}
+
+__utils::ifs_newline()
+{
+  IFS=$'\n'
+
+  return 0
+}
+
+__utils::ifs_reset()
+{
+  IFS=${IFS_BACKUP}
+
+  return 0
+}

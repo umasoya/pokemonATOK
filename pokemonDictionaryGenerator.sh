@@ -5,24 +5,47 @@
 #   - jq
 #   - uconv
 
-set -eux
+set -eu
 
-API='https://pokeapi.co/api/v2'
+# load modules
+source __vars
+source __validate
+source __option
+source __print
+source __utils
+source __debug
 
-FILENAME='pokemon_gen'
+if "${DEBUG}"; then
+  __debug::var_dump
+fi
 
-# SV(9世代(SV)はAPI側が未対応 2023/01/19現在)
-MAX_GEN=8
+__validate::range ${FROM} ${TO} ${MAX_GEN}
 
-# 品詞
-HINSHI='固有一般'
+for GEN in $(seq ${FROM} ${TO}); do
+  if "${VERBOSE}" || "${DEBUG}"; then
+    CURL_OPTION=''
+  else
+    CURL_OPTION='-s'
+  fi
 
-for GEN in $(seq 1 ${MAX_GEN}); do
-  URLS=$(curl "${API}/generation/${GEN}/" | jq -r '.pokemon_species[] | .url' | sort -V)
+  __print::verbose "curl ${API}/generation/${GEN} | jq -r '.pokemon_species[] | .url' | sort -V"
+  URLS=$(curl ${CURL_OPTION} "${API}/generation/${GEN}/" | jq -r '.pokemon_species[] | .url' | sort -V)
+
+  if "${BUNDLE}"; then
+    FILENAME=${OUTPUT}
+  else
+    FILENAME="${OUTPUT}_gen${GEN}"
+  fi
 
   for URL in ${URLS}; do
-    NAME=$(curl "${URL}" | jq -r '.names[] | select(.language.name == "ja") | .name')
+    __utils::ifs_backup && __utils::ifs_newline
+    __print::verbose "curl ${CURL_OPTION} ${URL} | jq -r '.names[] | select(.language.name == \"ja\") | .name'"
+    __utils::ifs_reset
+
+    NAME=$(curl ${CURL_OPTION} "${URL}" | jq -r '.names[] | select(.language.name == "ja") | .name')
     YOMIGANA=$(echo ${NAME} | uconv -x hiragana)
-    echo "${YOMIGANA}\t${NAME}\t${HINSHI}*" >> "${FILENAME}${GEN}"
+    ROW="${YOMIGANA}\t${NAME}\t${CLASS}*"
+
+    __print::toFile ${ROW} ${FILENAME}
   done
 done

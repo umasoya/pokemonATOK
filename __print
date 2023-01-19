@@ -1,0 +1,60 @@
+# vim: set ft=sh :
+
+color_off="\033[m"
+color_red="\033[31m"
+color_green="\033[32m"
+color_yellow="\033[33m"
+color_blue="\033[34m"
+
+__print::red()
+{
+  str=${1}
+  echo -e "${color_red}${str}${color_off}"
+
+  return 0
+}
+
+__print::green()
+{
+  str=${1}
+  echo -e "${color_green}${str}${color_off}"
+
+  return 0
+}
+
+__print::yellow()
+{
+  str=${1}
+  echo -e "${color_yellow}${str}${color_off}"
+
+  return 0
+}
+
+__print::blue()
+{
+  str=${1}
+  echo -e "${color_blue}${str}${color_off}"
+
+  return 0
+}
+
+__print::verbose()
+{
+  if "${VERBOSE}" || "${DEBUG}"; then
+    str=${1}
+    __print::yellow ${str}
+  fi
+
+  return 0
+}
+
+__print::toFile()
+{
+  row=${1}
+  file=${2}
+
+  __print::verbose "${row} >> ${file}"
+  echo "${row}" >> "${file}"
+
+  return 0
+}
