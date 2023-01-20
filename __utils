@@ -1,4 +1,4 @@
-# vim: set ft=sh :
+# vim: set ft=bash :
 
 IFS_BACKUP=${IFS}
 
@@ -19,6 +19,50 @@ __utils::ifs_newline()
 __utils::ifs_reset()
 {
   IFS=${IFS_BACKUP}
+
+  return 0
+}
+
+__utils::progress()
+{
+  local -r CURRENT=${1}
+  local -r MAX=${2}
+  # 進捗5%ごとに#を1つ表示
+  local -r INTERVAL=5
+  local -r BLANK='.'
+  local -r SYMBOL='#'
+  # プログレスバーの長さ
+  local -r LENGTH=$(echo "100 / ${INTERVAL}" | bc)
+
+  if "${VERBOSE}" || "${DEBUG}"; then
+    return 0
+  fi
+
+  local -r PARCENT=$(echo "scale=3; (${CURRENT}/${MAX})*100" | bc)
+  # 小数点以下を四捨五入
+  local -r ROUNDED=$(printf '%.0f' ${PARCENT})
+
+  # 現在の進捗率での記号の表示数
+  local -r COUNT=$(echo "${ROUNDED}/${INTERVAL}" | bc)
+
+  # BARが空だと表示が崩れるので場合分け
+  if [[ ${COUNT} -eq 0 ]]; then
+    local -r BLANKS=$(yes ${BLANK} | head -n ${LENGTH} | tr -d "\n")
+    printf '\r[%s](%3d/%3d)' ${BLANKS} ${CURRENT} ${MAX}
+    return 0
+  fi
+
+  # 100%
+  if [[ ${COUNT} -eq ${LENGTH} ]]; then
+    local -r BAR=$(yes ${SYMBOL} | head -n ${LENGTH} | tr -d "\n")
+    printf '\r[%s](%3d/%3d)' ${BAR} ${MAX} ${MAX}
+    return 0
+  fi
+
+  local -r BAR=$(yes ${SYMBOL} | head -n ${COUNT} | tr -d "\n")
+  # プログレスバーの空き
+  local -r BLANKS=$(yes ${BLANK} | head -n $(( LENGTH - COUNT )) | tr -d "\n")
+  printf '\r[%s%s](%3d/%3d)' ${BAR} ${BLANKS} ${CURRENT} ${MAX}
 
   return 0
 }

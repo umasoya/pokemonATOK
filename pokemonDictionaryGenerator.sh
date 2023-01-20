@@ -37,15 +37,22 @@ for GEN in $(seq ${FROM} ${TO}); do
     FILENAME="${OUTPUT}_gen${GEN}"
   fi
 
+  i=0
   for URL in ${URLS}; do
     __utils::ifs_backup && __utils::ifs_newline
     __print::verbose "curl ${CURL_OPTION} ${URL} | jq -r '.names[] | select(.language.name == \"ja\") | .name'"
     __utils::ifs_reset
+
+    __utils::progress ${i} $(echo ${URLS} | tr " " "\n" | wc -l)
 
     NAME=$(curl ${CURL_OPTION} "${URL}" | jq -r '.names[] | select(.language.name == "ja") | .name')
     YOMIGANA=$(echo ${NAME} | uconv -x hiragana)
     ROW="${YOMIGANA}\t${NAME}\t${CLASS}*"
 
     __print::toFile ${ROW} ${FILENAME}
+    ((i++))
   done
+  __utils::progress ${i} $(echo ${URLS} | tr " " "\n" | wc -l)
 done
+
+exit 0
