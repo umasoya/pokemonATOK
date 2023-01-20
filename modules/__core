@@ -1,0 +1,76 @@
+# vim: set ft=bash :
+
+#
+# 世代数をkey、その世代のポケモンへのAPIエンドポイントをvalueとする
+# 連想配列(URLS) を生成する
+#
+__core::fetch_urls()
+{
+  local -r FROM=${1}
+  local -r TO=${2}
+  local CURL_OPTION=$(__core::get_curl_option)
+
+  for GEN in $(seq ${FROM} ${TO}); do
+    local COMMAND="curl ${CURL_OPTION} ${API}/generation/${GEN}/ | jq -r '.pokemon_species[] | .url' | sort -V"
+    __utils::ifs_backup && __utils::ifs_newline
+    __print::verbose ${COMMAND}
+    __utils::ifs_reset
+
+    URLS[${GEN}]=$(eval ${COMMAND})
+  done
+
+  return 0
+}
+
+__core::fetch_pokemon()
+{
+  local -r TOTAL=$(echo "${URLS[@]}" | tr ' ' '\n' | wc -l)
+  local CURL_OPTION=$(__core::get_curl_option)
+  local i=0
+
+  for GEN in ${!URLS[@]}; do
+
+    for URL in ${URLS[${GEN}]}; do
+      local COMMAND="curl ${CURL_OPTION} ${URL} | jq -r '.names[] | select(.language.name == \"ja\") | .name'"
+      local FILENAME=$(__core::get_filename ${GEN})
+
+      __utils::ifs_backup && __utils::ifs_newline
+      __print::verbose "${COMMAND}"
+      __utils::ifs_reset
+
+      __utils::progress ${i} ${TOTAL}
+
+      NAME=$(eval ${COMMAND})
+      YOMIGANA=$(echo ${NAME} | uconv -x hiragana)
+      ROW="${YOMIGANA}\t${NAME}\t${CLASS}*"
+
+      __print::toFile ${ROW} ${FILENAME}
+
+      ((i++))
+    done
+  done
+
+  __utils::progress ${TOTAL} ${TOTAL}
+  return 0
+}
+
+__core::get_curl_option()
+{
+  if "${VERBOSE}" || "${DEBUG}"; then
+    echo ""
+  else
+    echo "-s"
+  fi
+  return 0
+}
+
+__core::get_filename()
+{
+  local -r GEN=${1}
+  if "${BUNDLE}"; then
+    echo "${OUTPUT}"
+  else
+    echo "${OUTPUT}_gen${GEN}"
+  fi
+  return 0
+}

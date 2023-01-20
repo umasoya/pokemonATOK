@@ -1,4 +1,4 @@
-# vim: set ft=sh :
+# vim: set ft=bash :
 
 ## init option vars
 # part of speech
@@ -29,14 +29,12 @@ while getopts bc:df:o:t:v OPT; do
       ;;
     f)
       FROM=${OPTARG}
-      __validate::integer ${FROM} f
       ;;
     o)
       OUTPUT=${OPTARG}
       ;;
     t)
       TO=${OPTARG}
-      __validate::integer ${TO} t
       ;;
     v)
       VERBOSE=true
