@@ -82,17 +82,26 @@ __core::write_header()
   local -r FILENAME=${1}
   local -r Index=${2}
 
+  local WRITE_FLG=false
+
   # bundleしない場合は必ず書き込む
   if ! "${BUNDLE}"; then
-    __print::toFile ${HEADER} ${FILENAME}
-    return 0
+    WRITE_FLG=true
   fi
 
   # bundleする場合は1度だけ書き込む
-  if [[ ${Index} -ne 0 ]]; then
-    return 0
+  if "${BUNDLE}" && [[ ${Index} -eq 0 ]]; then
+    WRITE_FLG=true
   fi
 
-  __print::toFile ${HEADER} ${FILENAME}
+  if "${WRITE_FLG}"; then
+    __utils::ifs_backup && __utils::ifs_newline
+    for line in ${HEADER}; do
+      __print::toFile ${line} ${FILENAME}
+    done
+    __utils::ifs_reset
+    __print::toFile "" ${FILENAME}
+  fi
+
   return 0
 }

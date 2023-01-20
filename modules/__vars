@@ -8,4 +8,16 @@ API='https://pokeapi.co/api/v2'
 MAX_GEN=$(curl -s "${API}/generation/" | jq '.count')
 
 # Header(Required)
-HEADER='!!ATOK_TANGO_TEXT_HEADER_1'
+#HEADER='!!ATOK_TANGO_TEXT_HEADER_1'
+HEADER=$(cat <<EOS
+!!ATOK_TANGO_TEXT_HEADER_1
+!!###=================================================###
+!!###                                                 ###
+!!###                 pokemonATOK                     ###
+!!###                                                 ###
+!!###  created by umasoya                             ###
+!!###    https://github.com/umasoya/pokemonATOK.git   ###
+!!###                                                 ###
+!!###=================================================###
+EOS
+)
