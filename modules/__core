@@ -29,10 +29,12 @@ __core::fetch_pokemon()
   local i=0
 
   for GEN in ${!URLS[@]}; do
+    # header 書き込み
+    local FILENAME=$(__core::get_filename ${GEN})
+    __core::write_header ${FILENAME} ${i}
 
     for URL in ${URLS[${GEN}]}; do
       local COMMAND="curl ${CURL_OPTION} ${URL} | jq -r '.names[] | select(.language.name == \"ja\") | .name'"
-      local FILENAME=$(__core::get_filename ${GEN})
 
       __utils::ifs_backup && __utils::ifs_newline
       __print::verbose "${COMMAND}"
@@ -72,5 +74,25 @@ __core::get_filename()
   else
     echo "${OUTPUT}_gen${GEN}"
   fi
+  return 0
+}
+
+__core::write_header()
+{
+  local -r FILENAME=${1}
+  local -r Index=${2}
+
+  # bundleしない場合は必ず書き込む
+  if ! "${BUNDLE}"; then
+    __print::toFile ${HEADER} ${FILENAME}
+    return 0
+  fi
+
+  # bundleする場合は1度だけ書き込む
+  if [[ ${Index} -ne 0 ]]; then
+    return 0
+  fi
+
+  __print::toFile ${HEADER} ${FILENAME}
   return 0
 }

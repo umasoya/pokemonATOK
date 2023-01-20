@@ -1,4 +1,4 @@
-# vim: set ft=sh :
+# vim: set ft=bash :
 
 # pokeAPI
 API='https://pokeapi.co/api/v2'
@@ -6,3 +6,6 @@ API='https://pokeapi.co/api/v2'
 # SV(9世代(SV)はAPI側が未対応 2023/01/19現在)
 # レジェンズアルセウスが9世代に割り振られているので、SV以降は一般に使われている世代とは1世代ずれる
 MAX_GEN=$(curl -s "${API}/generation/" | jq '.count')
+
+# Header(Required)
+HEADER='!!ATOK_TANGO_TEXT_HEADER_1'
