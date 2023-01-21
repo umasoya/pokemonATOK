@@ -50,7 +50,6 @@ __core::fetch_pokemon()
       C_RUBY=$(__core::replace_specific_char ${YOMIGANA})
 
       ROW=$(echo "${C_RUBY}\t${C_NAME}\t${C_CLASS}*")
-      #ROW=$(printf "%s\t%s\t%s" ${C_RUBY} ${C_NAME} ${C_CLASS})
 
       __print::toFile ${ROW} ${FILENAME}
 

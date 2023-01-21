@@ -17,3 +17,38 @@ __formatter::google_ime()
   # to be written
   return 0
 }
+
+__formatter::sjis()
+{
+  echo "${1}" | iconv -t sjis
+  return 0
+}
+
+__formatter::utf8()
+{
+  echo "${1}" | iconv -t utf8
+  return 0
+}
+
+#
+# 単純な文字列置換
+#
+# @param: str $_from
+# @param: str $_to
+# @param: str $_str
+#
+# @stdout: str
+# @return: int
+#
+__formatter::replace()
+{
+  local -r _from=${1}
+  local -r _to=${2}
+  local -r _str=${3}
+
+  local -r _addr=$(printf 's/%s/%s/g' ${_from} ${_to})
+
+  echo ${_str} | sed -e _addr
+
+  return 0
+}
