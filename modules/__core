@@ -6,17 +6,17 @@
 #
 __core::fetch_urls()
 {
-  local -r FROM=${1}
-  local -r TO=${2}
-  local CURL_OPTION=$(__core::get_curl_option)
+  local -r _from=${1}
+  local -r _to=${2}
+  local -r _curl_option=$(__core::get_curl_option)
 
-  for GEN in $(seq ${FROM} ${TO}); do
-    local COMMAND="curl ${CURL_OPTION} ${API}/generation/${GEN}/ | jq -r '.pokemon_species[] | .url' | sort -V"
+  for _gen in $(seq ${_from} ${_to}); do
+    local -r _cmd="curl ${_curl_option} ${API}/generation/${_gen}/ | jq -r '.pokemon_species[] | .url' | sort -V"
     __utils::ifs_backup && __utils::ifs_newline
-    __print::verbose ${COMMAND}
+    __print::verbose ${_cmd}
     __utils::ifs_reset
 
-    URLS[${GEN}]=$(eval ${COMMAND})
+    URLS[${_gen}]=$(eval ${_cmd})
   done
 
   return 0
@@ -24,40 +24,40 @@ __core::fetch_urls()
 
 __core::fetch_pokemon()
 {
-  local -r TOTAL=$(echo "${URLS[@]}" | tr ' ' '\n' | wc -l)
-  local CURL_OPTION=$(__core::get_curl_option)
-  local i=0
+  local -r _total=$(echo "${URLS[@]}" | tr ' ' '\n' | wc -l)
+  local -r _curl_option=$(__core::get_curl_option)
+  local _i=0
 
-  for GEN in ${!URLS[@]}; do
+  for _gen in ${!URLS[@]}; do
     # header 書き込み
-    local FILENAME=$(__core::get_filename ${GEN})
-    __core::write_header ${FILENAME} ${i}
+    local -r _filename=$(__core::get_filename ${_gen})
+    __core::write_header ${_filename} ${_i}
 
-    for URL in ${URLS[${GEN}]}; do
-      local COMMAND="curl ${CURL_OPTION} ${URL} | jq -r '.names[] | select(.language.name == \"ja\") | .name'"
+    for _url in ${URLS[${_gen}]}; do
+      local _cmd="curl ${_curl_option} ${_url} | jq -r '.names[] | select(.language.name == \"ja\") | .name'"
 
       __utils::ifs_backup && __utils::ifs_newline
-      __print::verbose "${COMMAND}"
+      __print::verbose "${_cmd}"
       __utils::ifs_reset
 
-      __utils::progress ${i} ${TOTAL}
+      __utils::progress ${_i} ${_total}
 
-      NAME=$(eval ${COMMAND})
-      YOMIGANA=$(echo ${NAME} | uconv -x hiragana | iconv -t ${CHAR_CODE})
+      local _name=$(eval ${_cmd})
+      local _yomigana=$(echo ${_name} | uconv -x hiragana | __formatter::sjis)
 
-      C_NAME=$(echo ${NAME} | iconv -t ${CHAR_CODE})
-      C_CLASS=$(echo ${CLASS} | iconv -t ${CHAR_CODE})
-      C_RUBY=$(__core::replace_specific_char ${YOMIGANA})
+      local _c_name=$(echo ${_name} | iconv -t ${CHAR_CODE})
+      local _c_class=$(echo ${CLASS} | iconv -t ${CHAR_CODE})
+      local _c_ruby=$(__core::replace_specific_char ${_yomigana})
 
-      ROW=$(echo "${C_RUBY}\t${C_NAME}\t${C_CLASS}*")
+      local _row=$(echo "${_c_ruby}\t${_c_name}\t${_c_class}*")
 
-      __print::toFile ${ROW} ${FILENAME}
+      __print::toFile ${_row} ${_filename}
 
-      ((i++))
+      ((_i++))
     done
   done
 
-  __utils::progress ${TOTAL} ${TOTAL}
+  __utils::progress ${_total} ${_total}
   return 0
 }
 

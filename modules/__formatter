@@ -1,29 +1,59 @@
 # vim: set ft=bash :
 
+#
+# For ATOK
+#
 __formatter::atok()
 {
   # to be written
   return 0
 }
 
+#
+# For macOS IME
+#
 __formatter::mac_os()
 {
   # to be written
   return 0
 }
 
+#
+# For GoogleIME
+#
 __formatter::google_ime()
 {
   # to be written
   return 0
 }
 
+#
+# 文字コードをSJISに変換
+#
+# @param: string $_str
+#
+# @stdout: string
+# @return: int
+#
 __formatter::sjis()
 {
-  echo "${1}" | iconv -t sjis
+  if [ -p /dev/stdin ]; then
+    local -r _str=$(cat -)
+  else
+    local -r _str=${@}
+  fi
+  echo "${_str}" | iconv -t sjis
   return 0
 }
 
+#
+# 文字コードをUTF-8に変換
+#
+# @param: string $_str
+#
+# @stdout: string
+# @return: int
+#
 __formatter::utf8()
 {
   echo "${1}" | iconv -t utf8
@@ -33,11 +63,11 @@ __formatter::utf8()
 #
 # 単純な文字列置換
 #
-# @param: str $_from
-# @param: str $_to
-# @param: str $_str
+# @param: string $_from
+# @param: string $_to
+# @param: string $_str
 #
-# @stdout: str
+# @stdout: string
 # @return: int
 #
 __formatter::replace()
