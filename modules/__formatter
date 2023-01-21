@@ -7,6 +7,7 @@
 __formatter::atok()
 {
   __buffer::init
+  __utils::ifs_backup && __utils::ifs_newline
 
   # not bundle
   for _gen in ${!POKEMONS[@]}; do
@@ -20,6 +21,7 @@ __formatter::atok()
       __buffer::append $(printf "%s\t%s\t%s*" ${_ruby} ${_name} ${_class})
     done
   done
+  __utils::ifs_reset
 
   return 0
 }
