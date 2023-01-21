@@ -1,0 +1,31 @@
+# vim: set ft=bash :
+
+__validator::integer()
+{
+  local -r _val=${1}
+  local -r _key=${2}
+  local -r _regex='^[0-9]+$'
+
+  if ! [[ ${_val} =~ ${_regex} ]]; then
+    echo "error: ${_key} option requires integer, but input '${_val}'." >&2; exit 1
+  fi
+}
+
+__validator::range()
+{
+  local -r _from=${1}
+  local -r _to=${2}
+  local -r _max=${3}
+
+  if [[ ${_from} -lt 1 ]]; then
+    echo "error: f option requires >=1, but input '${_from}'." >&2; exit 1
+  fi
+
+  if [[ ${_from} -gt ${_to} ]]; then
+    echo "error: invalid range. ${_from} to ${_to}" >&2; exit 1
+  fi
+
+  if [[ ${_to} -gt ${_max} ]]; then
+    echo "error: t option requires <=${_max}" >&2; exit 1
+  fi
+}

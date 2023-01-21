@@ -1,4 +1,4 @@
-# vim: set ft=sh :
+# vim: set ft=bash :
 
 color_off="\033[m"
 color_red="\033[31m"
@@ -54,7 +54,7 @@ __print::toFile()
   file=${2}
 
   __print::verbose "${row} >> ${file}"
-  echo "${row}" >> "${file}"
+  echo -e "${row}" >> "${file}"
 
   return 0
 }

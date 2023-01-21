@@ -1,15 +1,17 @@
-# vim: set ft=sh :
+# vim: set ft=bash :
 
 __debug::var_dump()
 {
-  __print::yellow "Option Values"
-  __print::green "BUNDLE: ${BUNDLE}"
-  __print::green "FROM: ${FROM}"
-  __print::green "TO: ${TO}"
-  __print::green "OUTPUT: ${OUTPUT}"
-  __print::green "CLASS: ${CLASS}"
-  __print::green "VERBOSE: ${VERBOSE}"
-  __print::green "DEBUG: ${DEBUG}"
+  if "${DEBUG}"; then
+    __print::yellow "Option Values"
+    __print::green "BUNDLE: ${BUNDLE}"
+    __print::green "FROM: ${FROM}"
+    __print::green "TO: ${TO}"
+    __print::green "OUTPUT: ${OUTPUT}"
+    __print::green "CLASS: ${CLASS}"
+    __print::green "VERBOSE: ${VERBOSE}"
+    __print::green "DEBUG: ${DEBUG}"
+  fi
 
   return 0
 }

@@ -43,8 +43,14 @@ __core::fetch_pokemon()
       __utils::progress ${i} ${TOTAL}
 
       NAME=$(eval ${COMMAND})
-      YOMIGANA=$(echo ${NAME} | uconv -x hiragana)
-      ROW="${YOMIGANA}\t${NAME}\t${CLASS}*"
+      YOMIGANA=$(echo ${NAME} | uconv -x hiragana | iconv -t ${CHAR_CODE})
+
+      C_NAME=$(echo ${NAME} | iconv -t ${CHAR_CODE})
+      C_CLASS=$(echo ${CLASS} | iconv -t ${CHAR_CODE})
+      C_RUBY=$(__core::replace_specific_char ${YOMIGANA})
+
+      ROW=$(echo "${C_RUBY}\t${C_NAME}\t${C_CLASS}*")
+      #ROW=$(printf "%s\t%s\t%s" ${C_RUBY} ${C_NAME} ${C_CLASS})
 
       __print::toFile ${ROW} ${FILENAME}
 
@@ -70,9 +76,9 @@ __core::get_filename()
 {
   local -r GEN=${1}
   if "${BUNDLE}"; then
-    echo "${OUTPUT}"
+    echo "${OUTPUT}.txt"
   else
-    echo "${OUTPUT}_gen${GEN}"
+    echo "${OUTPUT}_gen${GEN}.txt"
   fi
   return 0
 }
@@ -103,5 +109,25 @@ __core::write_header()
     __print::toFile "" ${FILENAME}
   fi
 
+  return 0
+}
+
+#
+# 雄雌マークなどの特殊な文字は個別に置換していく
+#
+__core::replace_specific_char()
+{
+  local STR=${1}
+
+  # ♂
+  if [[ ${STR} =~ .*"♂".* ]]; then
+    STR=$(echo ${STR} | tr "♂" "おす")
+  fi
+  # ♀
+  if [[ ${STR} =~ .*"♀".* ]]; then
+    STR=$(echo ${STR} | tr "♀" "めす")
+  fi
+
+  echo ${STR}
   return 0
 }

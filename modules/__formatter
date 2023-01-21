@@ -1,0 +1,16 @@
+# vim: set ft=bash :
+
+__formatter::atok()
+{
+  # to be written
+}
+
+__formatter::mac_os()
+{
+  # to be written
+}
+
+__formatter::google_ime()
+{
+  # to be written
+}
