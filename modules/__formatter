@@ -3,14 +3,17 @@
 __formatter::atok()
 {
   # to be written
+  return 0
 }
 
 __formatter::mac_os()
 {
   # to be written
+  return 0
 }
 
 __formatter::google_ime()
 {
   # to be written
+  return 0
 }
