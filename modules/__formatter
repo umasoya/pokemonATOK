@@ -2,10 +2,25 @@
 
 #
 # For ATOK
+# フォーマットして${BUFFER}に入れてく
 #
 __formatter::atok()
 {
-  # to be written
+  __buffer::init
+
+  # not bundle
+  for _gen in ${!POKEMONS[@]}; do
+    # write header
+    __buffer::append ${HEADER}
+    # write pokemons
+    for _pokemon in $(echo ${POKEMONS[${_gen}]} | tr ' ' '\n'); do
+      local _name=$(echo ${_pokemon} | __formatter::sjis)
+      local _ruby=$(echo ${_pokemon} | __formatter::replace_specific_char | __formatter::hiragana | __formatter::sjis)
+      local _class=$(echo ${CLASS} | __formatter::sjis)
+      __buffer::append $(printf "%s\t%s\t%s*" ${_ruby} ${_name} ${_class})
+    done
+  done
+
   return 0
 }
 
@@ -56,29 +71,39 @@ __formatter::sjis()
 #
 __formatter::utf8()
 {
-  echo "${1}" | iconv -t utf8
+  if [ -p /dev/stdin ]; then
+    local -r _str=$(cat -)
+  else
+    local -r _str=${@}
+  fi
+  echo "${_str}" | iconv -t utf8
+  return 0
+}
+
+__formatter::hiragana()
+{
+  if [ -p /dev/stdin ]; then
+    local -r _str=$(cat -)
+  else
+    local -r _str=${@}
+  fi
+  echo "${_str}" | uconv -x hiragana
   return 0
 }
 
 #
-# 単純な文字列置換
+# 雄雌マークなどの特殊な文字は個別に置換していく
 #
-# @param: string $_from
-# @param: string $_to
-# @param: string $_str
-#
-# @stdout: string
-# @return: int
-#
-__formatter::replace()
+__formatter::replace_specific_char()
 {
-  local -r _from=${1}
-  local -r _to=${2}
-  local -r _str=${3}
-
-  local -r _addr=$(printf 's/%s/%s/g' ${_from} ${_to})
-
-  echo ${_str} | sed -e _addr
+  if [ -p /dev/stdin ]; then
+    local -r _str=$(cat -)
+  else
+    local -r _str=${@}
+  fi
+  echo "${_str}" | sed \
+    -e 's/♂/オス/g' \
+    -e 's/♀/メス/g'
 
   return 0
 }

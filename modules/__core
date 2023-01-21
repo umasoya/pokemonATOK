@@ -11,7 +11,7 @@ __core::fetch_urls()
   local -r _curl_option=$(__core::get_curl_option)
 
   for _gen in $(seq ${_from} ${_to}); do
-    local -r _cmd="curl ${_curl_option} ${API}/generation/${_gen}/ | jq -r '.pokemon_species[] | .url' | sort -V"
+    local _cmd="curl ${_curl_option} ${API}/generation/${_gen}/ | jq -r '.pokemon_species[] | .url' | sort -V"
     __utils::ifs_backup && __utils::ifs_newline
     __print::verbose ${_cmd}
     __utils::ifs_reset
@@ -22,17 +22,14 @@ __core::fetch_urls()
   return 0
 }
 
-__core::execute()
+__core::fetch_pokemons()
 {
   local -r _total=$(echo "${URLS[@]}" | tr ' ' '\n' | wc -l)
   local -r _curl_option=$(__core::get_curl_option)
   local _i=0
 
   for _gen in ${!URLS[@]}; do
-    # header 書き込み
-    local -r _filename=$(__core::get_filename ${_gen})
-    __core::write_header ${_filename} ${_i}
-
+    POKEMONS[${_gen}]=""
     for _url in ${URLS[${_gen}]}; do
       local _cmd="curl ${_curl_option} ${_url} | jq -r '.names[] | select(.language.name == \"ja\") | .name'"
 
@@ -43,21 +40,27 @@ __core::execute()
       __utils::progress ${_i} ${_total}
 
       local _name=$(eval ${_cmd})
-      local _yomigana=$(echo ${_name} | uconv -x hiragana | __formatter::sjis)
 
-      local _c_name=$(echo ${_name} | iconv -t ${CHAR_CODE})
-      local _c_class=$(echo ${CLASS} | iconv -t ${CHAR_CODE})
-      local _c_ruby=$(__core::replace_specific_char ${_yomigana})
-
-      local _row=$(echo "${_c_ruby}\t${_c_name}\t${_c_class}*")
-
-      __print::toFile ${_row} ${_filename}
-
+      POKEMONS[${_gen}]+="${_name} "
       ((_i++))
     done
   done
 
   __utils::progress ${_total} ${_total}
+  return 0
+}
+
+__core::generate_filenames()
+{
+  if "${BUNDLE}"; then
+    FILENAMES+=("${OUTPUT}")
+    return 0
+  fi
+
+  for _gen in ${!URLS[@]}; do
+    FILENAMES+=("${OUTPUT}_gen${_gen}")
+  done
+
   return 0
 }
 
@@ -71,62 +74,13 @@ __core::get_curl_option()
   return 0
 }
 
-__core::get_filename()
+__core::write()
 {
-  local -r GEN=${1}
-  if "${BUNDLE}"; then
-    echo "${OUTPUT}.txt"
-  else
-    echo "${OUTPUT}_gen${GEN}.txt"
-  fi
-  return 0
-}
+  __utils::ifs_backup && __utils::ifs_newline
+  for _line in ${BUFFER[@]}; do
+    echo ${_line} >> 'test.txt'
+  done
+  __utils::ifs_reset
 
-__core::write_header()
-{
-  local -r FILENAME=${1}
-  local -r Index=${2}
-
-  local WRITE_FLG=false
-
-  # bundleしない場合は必ず書き込む
-  if ! "${BUNDLE}"; then
-    WRITE_FLG=true
-  fi
-
-  # bundleする場合は1度だけ書き込む
-  if "${BUNDLE}" && [[ ${Index} -eq 0 ]]; then
-    WRITE_FLG=true
-  fi
-
-  if "${WRITE_FLG}"; then
-    __utils::ifs_backup && __utils::ifs_newline
-    for line in ${HEADER}; do
-      __print::toFile ${line} ${FILENAME}
-    done
-    __utils::ifs_reset
-    __print::toFile "" ${FILENAME}
-  fi
-
-  return 0
-}
-
-#
-# 雄雌マークなどの特殊な文字は個別に置換していく
-#
-__core::replace_specific_char()
-{
-  local STR=${1}
-
-  # ♂
-  if [[ ${STR} =~ .*"♂".* ]]; then
-    STR=$(echo ${STR} | tr "♂" "おす")
-  fi
-  # ♀
-  if [[ ${STR} =~ .*"♀".* ]]; then
-    STR=$(echo ${STR} | tr "♀" "めす")
-  fi
-
-  echo ${STR}
   return 0
 }
