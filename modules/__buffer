@@ -1,0 +1,11 @@
+# vim: set ft=bash :
+
+__buffer::init()
+{
+  BUFFER=(); return 0
+}
+
+__buffer::append()
+{
+  BUFFER+=("${@}"); return 0
+}

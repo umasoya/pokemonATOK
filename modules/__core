@@ -22,7 +22,7 @@ __core::fetch_urls()
   return 0
 }
 
-__core::fetch_pokemon()
+__core::execute()
 {
   local -r _total=$(echo "${URLS[@]}" | tr ' ' '\n' | wc -l)
   local -r _curl_option=$(__core::get_curl_option)
